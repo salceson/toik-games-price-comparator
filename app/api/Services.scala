@@ -7,11 +7,11 @@ import scala.concurrent.Future
 trait GamesService {
   def search(query: String): Future[List[Game]]
 
-  def get(gameName: String): Future[Game]
+  def get(gameName: String): Future[Option[Game]]
 }
 
 trait UserService {
-  def getByEmail(email: String): Future[User]
+  def getByEmail(email: String): Future[Option[User]]
 
   def updateUser(email: String, newUser: User): Future[Unit]
 
