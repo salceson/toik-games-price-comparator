@@ -1,11 +1,13 @@
+package databus.mongoconnection
+
 import java.time.LocalDateTime
 
-import databus.mongoconnection.MongoConnectionImpl
 import models._
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
 import play.api.test.WithApplication
+import utils.EmbeddedConnection
 
 import scala.concurrent.duration._
 

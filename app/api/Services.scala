@@ -13,7 +13,7 @@ trait GamesService {
 trait UserService {
   def getByEmail(email: String): Future[Option[User]]
 
-  def updateUser(email: String, newUser: User): Future[Unit]
+  def updateUser(email: String, newUser: User): Future[Boolean]
 
   def getUsers: Future[List[User]]
 }

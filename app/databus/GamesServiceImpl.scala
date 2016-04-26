@@ -27,7 +27,22 @@ class GamesServiceImpl @Inject()(val shopService: ShopService,
   override implicit def formats: OFormat[Game] = JSONHelpers.gameFormat
 
   override def search(query: String): Future[List[Game]] =
-    mongoConnection.find(Json.obj("name" -> query))
+    shopService.getGames(query) flatMap { games: List[Game] =>
+      val updatedGames = games map { gameFromShop: Game =>
+        mongoConnection.get(gameFromShop.name) flatMap {
+          case Some(gameFromMongo) =>
+            val updatedGame = updateGame(gameFromMongo, gameFromShop.pricesPerShop)
+            mongoConnection.update(updatedGame) map { result =>
+              updatedGame
+            }
+          case None =>
+            mongoConnection.save(gameFromShop) map { result =>
+              gameFromShop
+            }
+        }
+      }
+      Future.sequence(updatedGames)
+    }
 
   override def get(gameName: String): Future[Option[Game]] =
     mongoConnection.get(gameName) flatMap {
@@ -40,17 +55,21 @@ class GamesServiceImpl @Inject()(val shopService: ShopService,
               logger.warn(s"No entries for $gameName but earlier $gameName was found!")
               Future(gameOption)
             } else {
-              val updatedPrices = newPrices.foldLeft(game.pricesPerShop) {
-                case (current, (shop, newPrice)) =>
-                  current.updated(shop, newPrice :: current.getOrElse(shop, List()))
-              }
-              val newGame = game.copy(pricesPerShop = updatedPrices)
+              val newGame = updateGame(game, newPrices mapValues { pe: PriceEntry => List(pe) })
               mongoConnection.update(newGame) map {
                 (_) => Some(newGame)
               }
             }
           }
         }
-      case _ => Future.failed(new IllegalStateException("Please first search for the game, then get it."))
+      case _ => Future(None)
     }
+
+  private def updateGame(oldGame: Game, newData: Map[String, List[PriceEntry]]): Game = {
+    val updatedPrices = newData.foldLeft(oldGame.pricesPerShop) {
+      case (current, (shop, newPrice)) =>
+        current.updated(shop, newPrice ++ current.getOrElse(shop, List()))
+    }
+    oldGame.copy(pricesPerShop = updatedPrices)
+  }
 }
