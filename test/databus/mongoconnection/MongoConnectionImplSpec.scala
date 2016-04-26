@@ -20,7 +20,6 @@ class MongoConnectionImplSpec(implicit ee: ExecutionEnv) extends Specification w
     "provide basic methods" in new WithApplication {
       val testGame1 = Game(
         name = "Test",
-        description = "Test Game",
         images = List(),
         pricesPerShop = Map(
           "Steam" -> List(
@@ -34,7 +33,6 @@ class MongoConnectionImplSpec(implicit ee: ExecutionEnv) extends Specification w
       )
       val testGame2 = Game(
         name = "Test",
-        description = "Test Game",
         images = List(),
         pricesPerShop = Map(
           "Steam" -> List(
@@ -51,9 +49,9 @@ class MongoConnectionImplSpec(implicit ee: ExecutionEnv) extends Specification w
       instance.save(testGame1) must beTrue.awaitFor(5.seconds)
       instance.save(testGame2) must beTrue.awaitFor(5.seconds)
       instance.get("Test") must beEqualTo[Option[Game]](Some(testGame1)).awaitFor(5.seconds)
-      instance.find(Json.obj("description" -> "Test Game")) must haveSize[List[Game]](2).awaitFor(5.seconds)
-      instance.update(testGame2.copy(description = "Nope")) must beTrue.awaitFor(5.seconds)
-      instance.find(Json.obj("description" -> "Test Game")) must haveSize[List[Game]](1).awaitFor(5.seconds)
+      instance.find(Json.obj("images" -> List())) must haveSize[List[Game]](2).awaitFor(5.seconds)
+      instance.update(testGame2.copy(images = List("Nope"))) must beTrue.awaitFor(5.seconds)
+      instance.find(Json.obj("images" -> List())) must haveSize[List[Game]](1).awaitFor(5.seconds)
     }
   }
 }
