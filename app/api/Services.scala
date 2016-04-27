@@ -21,5 +21,5 @@ trait UserService {
 trait ShopService {
   def getGames(query: String): Future[List[Game]]
 
-  def getPrices(gameName: String): Future[Map[String, PriceEntry]]
+  //def getPrices(gameName: String): Future[Map[String, PriceEntry]]
 }

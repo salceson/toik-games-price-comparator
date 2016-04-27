@@ -8,7 +8,7 @@ sealed abstract class MongoModel {
   def getId: String
 }
 
-case class Game(name: String, images: List[String],
+case class Game(name: String, image: String,
                 pricesPerShop: Map[String, List[PriceEntry]], lastUpdate: LocalDateTime)
   extends MongoModel {
   override def getId: String = name
