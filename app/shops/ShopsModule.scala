@@ -9,5 +9,6 @@ class ShopsModule extends AbstractModule with ScalaModule  {
     val scrapersBinding = ScalaMultibinder.newSetBinder(binder, classOf[ShopScraper])
     scrapersBinding.addBinding.toInstance(new OriginScraper)
     scrapersBinding.addBinding.toInstance(new SteamScraper)
+    scrapersBinding.addBinding.toInstance(new GOGScraper)
   }
 }

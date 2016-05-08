@@ -34,7 +34,7 @@ trait ShopScraper {
   }
 
   def shortenUrl(url: String) : String = {
-     url.length() > 100  match {
+     url.length() > 90  match {
        case false =>  url
        case true =>
          val apiKey = "R_e29aa9c6e2144e19a52df028f146c899"
@@ -84,12 +84,12 @@ class GOGScraper extends ShopScraper {
   override var url = "https://www.gog.com/games/ajax/filtered?mediaType=game&search="
 
   override def getGames(query: String): List[Game] = {
-    val doc = Jsoup.connect(url + "witcher").ignoreContentType(true).execute().body()
+    val doc = Jsoup.connect(url + query).ignoreContentType(true).execute().body()
     val products = Json.parse(doc) \ "products"
 
     val titles = (products \\ "title").map(title => title.as[String])
     val prices = (products \\ "price").map(price => (price \ "finalAmount").as[String])
-    val imageUrls = (products \\ "image").map(imageUrl => shortenUrl(imageUrl.as[String].drop(2) + ".jpg"))
+    val imageUrls = (products \\ "image").map(imageUrl => shortenUrl("http:" + imageUrl.as[String] + ".jpg"))
 
     for (item <- (titles, imageUrls, prices).zipped.toList)
       yield new Game(item._1, item._2, Map("gog" -> List(priceStrToPriceEntry(item._3))), LocalDateTime.now())
