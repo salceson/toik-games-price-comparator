@@ -3,14 +3,15 @@ package databus
 import java.time.LocalDateTime
 
 import api._
-import com.google.inject.Inject
+import com.google.inject.{Inject, Singleton}
 import databus.mongoconnection.MongoConnectivity
 import models._
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.OFormat
 import play.api.{Application, Logger}
 
 import scala.concurrent.Future
 
+@Singleton
 class GamesServiceImpl @Inject()(val shopService: ShopService,
                                  override val application: Application)
   extends GamesService

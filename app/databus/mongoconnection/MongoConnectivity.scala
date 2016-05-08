@@ -5,9 +5,9 @@ import models.MongoModel
 import play.api.Application
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoPlugin
+import reactivemongo.api.{MongoConnection => RMongoConnection}
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.api.{MongoConnection => RMongoConnection}
 
 import scala.concurrent.Future
 

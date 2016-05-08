@@ -1,7 +1,7 @@
 package databus
 
 import api._
-import com.google.inject.Inject
+import com.google.inject.{Inject, Singleton}
 import databus.mongoconnection.MongoConnectivity
 import models._
 import play.api.Application
@@ -9,6 +9,7 @@ import play.api.libs.json.{Json, OFormat}
 
 import scala.concurrent.Future
 
+@Singleton
 class UsersServiceImpl @Inject()(override val application: Application)
   extends UserService
     with MongoConnectivity[User] {
