@@ -8,6 +8,8 @@ import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Element
+import org.jsoup.Jsoup
+import play.api.libs.json.Json
 
 import scala.math.BigDecimal.RoundingMode
 import scala.util.parsing.json.JSON
@@ -75,6 +77,22 @@ class OriginScraper  extends ShopScraper {
       yield new Game(item._1, shortenUrl(item._2), Map("origin" -> List(priceStrToPriceEntry(price))), LocalDateTime
         .now())
 
+  }
+}
+
+class GOGScraper extends ShopScraper {
+  override var url = "https://www.gog.com/games/ajax/filtered?mediaType=game&search="
+
+  override def getGames(query: String): List[Game] = {
+    val doc = Jsoup.connect(url + "witcher").ignoreContentType(true).execute().body()
+    val products = Json.parse(doc) \ "products"
+
+    val titles = (products \\ "title").map(title => title.as[String])
+    val prices = (products \\ "price").map(price => (price \ "finalAmount").as[String])
+    val imageUrls = (products \\ "image").map(imageUrl => shortenUrl(imageUrl.as[String].drop(2) + ".jpg"))
+
+    for (item <- (titles, imageUrls, prices).zipped.toList)
+      yield new Game(item._1, item._2, Map("gog" -> List(priceStrToPriceEntry(item._3))), LocalDateTime.now())
   }
 }
 
