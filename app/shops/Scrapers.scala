@@ -2,6 +2,7 @@ package shops
 
 import java.time.LocalDateTime
 
+import com.google.inject.Inject
 import models.{Game, Money, PriceEntry}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
@@ -15,9 +16,10 @@ import scalaj.http.{Http, HttpResponse}
 trait ShopScraper {
   var url : String
   val browser = JsoupBrowser()
+  @Inject var euroToPln : Double = _
   def asSearchUrl: String => String = url + _
   def getGames(query: String): List[Game]
-  def priceStrToPriceEntry(_price: String, euroToPln: Double = 4.4) : PriceEntry = {
+  def priceStrToPriceEntry(_price: String) : PriceEntry = {
     val pattern = """(\d+,*\d*).*""".r
     var price = "0.00"
     pattern.findAllIn(_price).matchData foreach {
