@@ -51,12 +51,14 @@ class GamesServiceImpl @Inject()(val shopService: ShopService,
         if (game.lastUpdate.isAfter(LocalDateTime.now().minusHours(1))) {
           Future(gameOption)
         } else {
-          shopService.getPrices(gameName) flatMap { (newPrices: Map[String, PriceEntry]) =>
+          shopService.getGames(gameName) flatMap { (games: List[Game]) =>
+            val game = games.filter((g: Game) => g.name == gameName).head
+            val newPrices = game.pricesPerShop
             if (newPrices.isEmpty) {
               logger.warn(s"No entries for $gameName but earlier $gameName was found!")
               Future(gameOption)
             } else {
-              val newGame = updateGame(game, newPrices mapValues { pe: PriceEntry => List(pe) })
+              val newGame = updateGame(game, newPrices)
               mongoConnection.update(newGame) map {
                 (_) => Some(newGame)
               }

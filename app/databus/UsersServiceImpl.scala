@@ -26,6 +26,9 @@ class UsersServiceImpl @Inject()(override val application: Application)
   override def getUsers: Future[List[User]] =
     mongoConnection.find(Json.obj())
 
-  override def updateUser(email: String, newUser: User): Future[Boolean] =
-    mongoConnection.update(newUser)
+  override def updateUser(newUser: User): Future[Boolean] =
+    mongoConnection.update(newUser) flatMap {
+      case true => Future(true)
+      case false => mongoConnection.save(newUser)
+    }
 }
