@@ -14,6 +14,8 @@ class UsersServiceImpl @Inject()(override val application: Application)
   extends UserService
     with MongoConnectivity[User] {
 
+  import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
   override def idFieldName: String = "email"
 
   override def collectionName: String = "users"
