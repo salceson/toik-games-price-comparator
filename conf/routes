@@ -1,11 +1,11 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
+GET        /                              controllers.MainController.login
+GET        /logout                        controllers.MainController.logout
+GET        /authenticate                  controllers.MainController.authenticate
+GET        /settings                      controllers.MainController.settings
+GET        /javascriptRoutes              controllers.MainController.javascriptRoutes
+GET        /searchResult/:text            controllers.MainController.searchResult(text:String)
+GET        /subscribe/:text/:price        controllers.MainController.subscribe(text:String, price:String)
+GET        /unsub/:text/:price/:currency  controllers.MainController.unsub(text:String, price:String, currency:String)
 
-# Home page
-GET     /                           controllers.Application.index
 
-# Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
-
-    
+GET        /public/*file                  controllers.Assets.at(path="/public", file)

@@ -2,12 +2,12 @@ package databus.mongoconnection
 
 import com.typesafe.config.ConfigFactory
 import models.MongoModel
-import play.api.Application
 import play.api.libs.json._
-import play.modules.reactivemongo.ReactiveMongoPlugin
+import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.{MongoConnection => RMongoConnection}
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
+import play.api.Logger
 
 import scala.concurrent.Future
 
@@ -43,19 +43,27 @@ class MongoConnectionImpl[T <: MongoModel](collectionName: String, idFieldName: 
   override def find(query: JsObject): Future[List[T]] =
     collection.find(query).cursor[T]().collect[List]()
 
-  override def update(obj: T): Future[Boolean] =
-    collection.update(Json.obj(idFieldName -> obj.getId), obj).map { result => result.ok }
+  override def update(obj: T): Future[Boolean] = {
+    Logger.debug(s"Updating $obj...")
+    collection.update(Json.obj(idFieldName -> obj.getId), obj).map { result =>
+      Logger.debug(s"Update ok: ${result.ok}, errors: ${result.errmsg}")
+      result.ok
+    }
+  }
 
   override def save(obj: T): Future[Boolean] =
-    collection.insert[T](obj).map { result => result.ok }
+    collection.insert[T](obj).map { result =>
+      Logger.debug(s"Saving ok: ${result.ok}, errors: ${result.errmsg}")
+      result.ok
+    }
 }
 
 trait MongoConnectivity[T <: MongoModel] {
   implicit def formats: OFormat[T]
 
-  implicit def application: Application
+  val reactiveMongoApi: ReactiveMongoApi
 
-  private implicit val connection = ReactiveMongoPlugin.connection
+  private implicit val connection = reactiveMongoApi.connection
 
   def collectionName: String
 

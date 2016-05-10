@@ -3,23 +3,20 @@ package databus
 import java.time.LocalDateTime
 
 import api._
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 import databus.mongoconnection.MongoConnectivity
 import models._
+import play.api.Logger
 import play.api.libs.json.OFormat
-import play.api.{Application, Logger}
+import play.modules.reactivemongo.ReactiveMongoApi
 
 import scala.concurrent.Future
 
-@Singleton
 class GamesServiceImpl @Inject()(val shopService: ShopService,
-                                 override val application: Application)
-  extends GamesService
-    with MongoConnectivity[Game] {
+                                 val reactiveMongoApi: ReactiveMongoApi)
+  extends GamesService with MongoConnectivity[Game] {
 
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
-
-  val logger = Logger(getClass)
 
   override def collectionName: String = "games"
 
@@ -29,14 +26,17 @@ class GamesServiceImpl @Inject()(val shopService: ShopService,
 
   override def search(query: String): Future[List[Game]] =
     shopService.getGames(query) flatMap { games: List[Game] =>
+      Logger.debug(s"Got games: ${games.length}")
       val updatedGames = games map { gameFromShop: Game =>
         mongoConnection.get(gameFromShop.name) flatMap {
           case Some(gameFromMongo) =>
+            Logger.debug(s"Game ${gameFromShop.name} is in mongo")
             val updatedGame = updateGame(gameFromMongo, gameFromShop.pricesPerShop)
             mongoConnection.update(updatedGame) map { result =>
               updatedGame
             }
           case None =>
+            Logger.debug(s"Game ${gameFromShop.name} is not  in mongo")
             mongoConnection.save(gameFromShop) map { result =>
               gameFromShop
             }
@@ -52,16 +52,17 @@ class GamesServiceImpl @Inject()(val shopService: ShopService,
           Future(gameOption)
         } else {
           shopService.getGames(gameName) flatMap { (games: List[Game]) =>
-            val game = games.filter((g: Game) => g.name == gameName).head
-            val newPrices = game.pricesPerShop
-            if (newPrices.isEmpty) {
-              logger.warn(s"No entries for $gameName but earlier $gameName was found!")
-              Future(gameOption)
-            } else {
-              val newGame = updateGame(game, newPrices)
-              mongoConnection.update(newGame) map {
-                (_) => Some(newGame)
-              }
+            val gameFromMongoOption = games.find((g: Game) => g.name == gameName)
+            gameFromMongoOption match {
+              case None =>
+                Logger.warn(s"No entries for $gameName but earlier $gameName was found!")
+                Future(gameOption)
+              case Some(gameFromMongo) =>
+                val newPrices = gameFromMongo.pricesPerShop
+                val newGame = updateGame(gameFromMongo, newPrices)
+                mongoConnection.update(newGame) map {
+                  (_) => Some(newGame)
+                }
             }
           }
         }

@@ -88,7 +88,7 @@ class GOGScraper extends ShopScraper {
     val products = Json.parse(doc) \ "products"
 
     val titles = (products \\ "title").map(title => title.as[String])
-    val prices = (products \\ "price").map(price => (price \ "finalAmount").as[String])
+    val prices = (products \\ "price").map(price => s"${(price \ "finalAmount").as[String]}zł")
     val imageUrls = (products \\ "image").map(imageUrl => shortenUrl("http:" + imageUrl.as[String] + ".jpg"))
 
     for (item <- (titles, imageUrls, prices).zipped.toList)

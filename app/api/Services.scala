@@ -16,6 +16,8 @@ trait UserService {
   def updateUser(newUser: User): Future[Boolean]
 
   def getUsers: Future[List[User]]
+
+  def registerUser(newUser: User): Future[Boolean]
 }
 
 trait ShopService {

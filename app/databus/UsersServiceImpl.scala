@@ -1,20 +1,16 @@
 package databus
 
 import api._
-import com.google.inject.{Inject, Singleton}
+import com.google.inject.Inject
 import databus.mongoconnection.MongoConnectivity
 import models._
-import play.api.Application
 import play.api.libs.json.{Json, OFormat}
+import play.modules.reactivemongo.ReactiveMongoApi
 
 import scala.concurrent.Future
 
-@Singleton
-class UsersServiceImpl @Inject()(override val application: Application)
-  extends UserService
-    with MongoConnectivity[User] {
-
-  import play.api.libs.concurrent.Execution.Implicits.defaultContext
+class UsersServiceImpl @Inject()(val reactiveMongoApi: ReactiveMongoApi)
+  extends UserService with MongoConnectivity[User] {
 
   override def idFieldName: String = "email"
 
@@ -29,8 +25,8 @@ class UsersServiceImpl @Inject()(override val application: Application)
     mongoConnection.find(Json.obj())
 
   override def updateUser(newUser: User): Future[Boolean] =
-    mongoConnection.update(newUser) flatMap {
-      case true => Future(true)
-      case false => mongoConnection.save(newUser)
-    }
+    mongoConnection.update(newUser)
+
+  override def registerUser(newUser: User): Future[Boolean] =
+    mongoConnection.save(newUser)
 }

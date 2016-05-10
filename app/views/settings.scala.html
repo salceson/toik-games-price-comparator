@@ -1,0 +1,101 @@
+@(mail: String, wishlist: List[Wish])
+<html>
+    <head>
+        <title>Toik app</title>
+        <link rel="stylesheet" type="text/css" href='@routes.Assets.at("stylesheets/bootstrap.min.css")' />
+        <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        .navbar {
+            margin-bottom: 20px;
+        }
+        </style>
+        <script type="text/javascript" src='@routes.Assets.at("javascripts/jquery.js")'></script>
+        <script src='@routes.Assets.at("javascripts/bootstrap.js")'></script>
+        <script type="text/javascript" src="@routes.MainController.javascriptRoutes"></script>
+        <script>
+                function drawTable(data) {
+                    $("#personDataTable tbody").empty();
+                    for (var i = 0; i < data.length; i++) {
+                        drawRow(data[i]);
+                    }
+                }
+                function drawRow(rowData) {
+                    var row = $("<tr />");
+                    $("#personDataTable tbody").append(row);
+                    row.append($("<td>" + rowData.name + "</td>"));
+                    row.append($("<td>" + rowData.shop + "</td>"));
+                    row.append($("<td>" + rowData.price + "</td>"));
+
+                }
+                function search() {
+                    $.ajax(jsRoutes.controllers.MainController.searchResult($('#txtSearch').val()))
+                            .done(function (data) {
+                                console.log(data);
+                                drawTable(data);
+                            });
+                }
+
+                function unsub(name, price, currency) {
+
+                    $.ajax(jsRoutes.controllers.MainController.unsub(name, price, currency))
+                            .done(function () {
+                                location.reload();
+                            });
+                }
+
+                function sub() {
+                    name = $("#name").val();
+                    price = $("#price").val();
+                    $.ajax(jsRoutes.controllers.MainController.subscribe(name, price.toString()))
+                            .done(function () {
+                                location.reload();
+                            });
+                }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            @navbar(true)
+            <h1>Ustawienia</h1>
+            <h3>Subskrypcja</h3>
+            <input type="text" id="name">
+            <input type="number" id="price">
+            <button type="button" onclick="sub();">Subskrybuj</button>
+            <h3>Wyszukaj gry</h3>
+            <input type="text" id="txtSearch" />
+            <input type="button" id="btnSearch" value="Search" onclick="search();" />
+            <table class="table" id="personDataTable">
+                <thead>
+                    <tr>
+                        <th>Game name</th>
+                        <th>Game shop</th>
+                        <th>Game price</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <h3>Twoje aktualne subskrypcje</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nazwa gry</th>
+                        <th>Cena</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @for(wish <- wishlist) {
+                    <tr>
+                        <td>@wish.gameName</td>
+                        <td>@wish.priceThreshold.value.toString()</td>
+                        <td><input type="button" value="Unsubscribe" onclick="unsub('@wish.gameName', '@wish.priceThreshold.value.toString()', '@wish.priceThreshold.currency')"></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>

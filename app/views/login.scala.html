@@ -1,0 +1,16 @@
+@import controllers.MainController.UserMail
+@import helper._
+@(userForm: Form[UserMail])(implicit messages: Messages)
+@implicitField = @{
+    FieldConstructor(plainFieldConstructor.f)
+}
+@main("Login") {
+    <p>Login by entering the mail and hitting Enter.</p>
+    @helper.form(action = routes.MainController.authenticate()) {
+        @helper.input(userForm("mail")) { (id, name, value, args) =>
+            <label for="@id">E-mail:</label>
+            <input type="email" id="@id" value="@value" name="@name" @toHtmlArgs(args) />
+        }
+        <input type="submit" value="Login" name="submit" />
+    }
+}
